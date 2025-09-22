@@ -1,0 +1,21 @@
+export default async function handler(req, res) {
+  const targetBase = "https://goldfish-app-3lf7u.ondigitalocean.app";
+  const targetUrl = targetBase + req.url.replace("/api/proxy", "");
+
+  const response = await fetch(targetUrl, {
+    method: req.method,
+    headers: {
+      "Content-Type": "application/json",
+      ...(req.headers.authorization ? { Authorization: req.headers.authorization } : {}),
+    },
+    body: req.method === "POST" ? JSON.stringify(req.body) : undefined,
+  });
+
+  const text = await response.text();
+
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  res.status(response.status).send(text);
+}
